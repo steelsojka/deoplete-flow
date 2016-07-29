@@ -1,13 +1,17 @@
 import json
 import deoplete.util
 
+from deoplete.logger import getLogger
 from subprocess import Popen, PIPE
 from .base import Base
+
+log = getLogger('logging')
 
 class Source(Base):
     def __init__(self, vim):
         Base.__init__(self, vim);
 
+        self.flow_bin = self.vim.vars['deoplete#sources#flow#flow_bin'] or 'flow'
         self.rank = 600
         self.name = 'flow'
         self.mark = '[FL]'
@@ -21,7 +25,9 @@ class Source(Base):
     def gather_candidates(self, context):
         line = str(self.vim.current.window.cursor[0])
         column = str(self.vim.current.window.cursor[1] + 1)
-        command = ['flow', 'autocomplete', '--json', '--no-auto-start', line, column]
+        command = [self.flow_bin, 'autocomplete', '--json', '--no-auto-start', line, column]
+
+        log.debug(command)
         buf = '\n'.join(self.vim.current.buffer[:])
 
         process = Popen(command, stdout=PIPE, stdin=PIPE)
