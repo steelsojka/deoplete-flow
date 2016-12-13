@@ -30,12 +30,15 @@ class Source(Base):
         log.debug(command)
         buf = '\n'.join(self.vim.current.buffer[:])
 
-        process = Popen(command, stdout=PIPE, stdin=PIPE)
-        command_results = process.communicate(input=str.encode(buf))[0]
+        try:
+            process = Popen(command, stdout=PIPE, stdin=PIPE)
+            command_results = process.communicate(input=str.encode(buf))[0]
 
-        if process.returncode != 0:
-            return []
+            if process.returncode != 0:
+                return []
 
-        results = json.loads(command_results.decode('utf-8'))
+            results = json.loads(command_results.decode('utf-8'))
 
-        return [{'word': x['name'], 'kind': x['type']} for x in results['result']] 
+            return [{'word': x['name'], 'kind': x['type']} for x in results['result']]
+        except FileNotFoundError:
+            pass # ignore file not found error
